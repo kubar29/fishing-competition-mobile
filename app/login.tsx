@@ -1,12 +1,43 @@
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../src/components/AppButton';
 import { AppInput } from '../src/components/AppInput';
 import { ScreenContainer } from '../src/components/ScreenContainer';
 import { colors } from '../src/constants/colors';
+import { useAuth } from '../src/context/AuthContext';
 
 export default function LoginScreen() {
+  const { login, user } = useAuth();
+
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)/competitions');
+    }
+  }, [user]);
+
+  async function handleLogin() {
+    try {
+      setErrorMessage('');
+      setIsSubmitting(true);
+
+      await login(email, password);
+
+      router.replace('/(tabs)/competitions');
+    } catch (error) {
+      setErrorMessage('Nieprawidłowy e-mail lub hasło.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <ScreenContainer>
       <View style={styles.content}>
@@ -16,13 +47,30 @@ export default function LoginScreen() {
         <Text style={styles.title}>Zaloguj się</Text>
         <Text style={styles.subtitle}>Witamy ponownie</Text>
 
-        <AppInput label="E-mail" placeholder="Wpisz swój adres e-mail" />
-        <AppInput label="Hasło" placeholder="Wpisz swoje hasło" secureTextEntry />
-
-        <AppButton
-          title="ZALOGUJ SIĘ"
-          onPress={() => router.replace('/(tabs)/competitions')}
+        <AppInput
+          label="E-mail"
+          placeholder="Wpisz swój adres e-mail"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          
         />
+
+        <AppInput
+          label="Hasło"
+          placeholder="Wpisz swoje hasło"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+
+        {isSubmitting ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <AppButton title="ZALOGUJ SIĘ" onPress={handleLogin} />
+        )}
 
         <View style={styles.dividerWrapper}>
           <View style={styles.divider} />
@@ -69,6 +117,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 32,
+  },
+  error: {
+    color: colors.danger,
+    textAlign: 'center',
+    marginBottom: 12,
+    fontWeight: '600',
   },
   dividerWrapper: {
     flexDirection: 'row',

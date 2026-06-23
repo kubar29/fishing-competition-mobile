@@ -12,6 +12,8 @@ export function AppInput({ label, ...props }: AppInputProps) {
       <Text style={styles.label}>{label}</Text>
       <TextInput
         placeholderTextColor={colors.muted}
+        cursorColor={colors.primary}
+        selectionColor={colors.primary}
         style={styles.input}
         {...props}
       />

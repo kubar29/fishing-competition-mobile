@@ -4,8 +4,16 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../src/components/AppButton';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors } from '../../src/constants/colors';
+import { useAuth } from '../../src/context/AuthContext';
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
+
+  async function handleLogout() {
+    await logout();
+    router.replace('/login');
+  }
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
@@ -13,18 +21,17 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Zalogowany użytkownik</Text>
-        <Text style={styles.value}>user@example.com</Text>
+        <Text style={styles.label}>Użytkownik</Text>
+        <Text style={styles.value}>{user?.name ?? 'Brak danych'}</Text>
+
+        <Text style={styles.label}>E-mail</Text>
+        <Text style={styles.value}>{user?.email ?? 'Brak danych'}</Text>
 
         <Text style={styles.label}>Rola</Text>
-        <Text style={styles.value}>USER</Text>
+        <Text style={styles.value}>{user?.role ?? 'Brak danych'}</Text>
       </View>
 
-      <AppButton
-        title="WYLOGUJ SIĘ"
-        variant="outline"
-        onPress={() => router.replace('/login')}
-      />
+      <AppButton title="WYLOGUJ SIĘ" variant="outline" onPress={handleLogout} />
     </ScreenContainer>
   );
 }
