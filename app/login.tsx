@@ -1,7 +1,7 @@
+import axios from 'axios';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-
 import { AppButton } from '../src/components/AppButton';
 import { AppInput } from '../src/components/AppInput';
 import { ScreenContainer } from '../src/components/ScreenContainer';
@@ -24,15 +24,35 @@ export default function LoginScreen() {
   }, [user]);
 
   async function handleLogin() {
+
+    if (isSubmitting) return;
+
+    if (!email.trim() || !password) {
+      setErrorMessage('Wpisz e-mail i hasło.');
+      return;
+    }
+
     try {
       setErrorMessage('');
       setIsSubmitting(true);
 
-      await login(email, password);
+      await login(email.trim(), password);
 
       router.replace('/(tabs)/competitions');
     } catch (error) {
-      setErrorMessage('Nieprawidłowy e-mail lub hasło.');
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          setErrorMessage('Nieprawidłowy e-mail lub hasło.');
+          return;
+        }
+
+        if (!error.response) {
+          setErrorMessage('Brak połączenia z serwerem.');
+          return;
+        }
+      }
+
+      setErrorMessage('Wystąpił nieoczekiwany błąd.');
     } finally {
       setIsSubmitting(false);
     }
@@ -53,6 +73,7 @@ export default function LoginScreen() {
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
+          autoCorrect={false}
           
         />
 
@@ -62,6 +83,7 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoCorrect={false}
         />
 
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}

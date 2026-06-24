@@ -1,40 +1,80 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
+import { getCompetitions } from '../../src/api/competitionApi';
 import { CompetitionCard } from '../../src/components/CompetitionCard';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors } from '../../src/constants/colors';
+import { Competition } from '../../src/types/competition';
 
 export default function CompetitionsScreen() {
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  async function loadCompetitions() {
+    try {
+      setErrorMessage('');
+      setIsLoading(true);
+
+      const data = await getCompetitions();
+      setCompetitions(data);
+    } catch (error) {
+      setErrorMessage('Nie udało się pobrać zawodów.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCompetitions();
+  }, []);
+
+  function formatDate(date: string) {
+    return new Date(date).toLocaleDateString('pl-PL');
+  }
+
+  function getDay(date: string) {
+    return new Date(date).getDate().toString();
+  }
+
+  function getMonth(date: string) {
+    return new Date(date)
+      .toLocaleDateString('pl-PL', { month: 'short' })
+      .toUpperCase();
+  }
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
         <Text style={styles.title}>Zawody</Text>
-        <Text style={styles.subtitle}>Nadchodzące i dostępne zawody</Text>
       </View>
 
-      <CompetitionCard
-        name="Mistrzostwa Okręgu"
-        place="Kanał Żerański"
-        date="12.06.2026"
-        day="12"
-        month="CZE"
-      />
-
-      <CompetitionCard
-        name="Puchar Prezesa Koła"
-        place="Zalew Grodzisk"
-        date="18.06.2026"
-        day="18"
-        month="CZE"
-      />
-
-      <CompetitionCard
-        name="Grand Prix Mazowsza"
-        place="Rzeka Wisła"
-        date="25.06.2026"
-        day="25"
-        month="CZE"
-      />
+      {isLoading ? (
+        <ActivityIndicator color={colors.primary} />
+      ) : errorMessage ? (
+        <Text style={styles.error}>{errorMessage}</Text>
+      ) : (
+        <FlatList
+          data={competitions}
+          keyExtractor={(item) => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Text style={styles.empty}>Brak zawodów do wyświetlenia.</Text>
+          }
+          renderItem={({ item }) => (
+            <CompetitionCard
+              name={item.name}
+              place="Fishing Competition"
+              date={formatDate(item.date)}
+              day={getDay(item.date)}
+              month={getMonth(item.date)}
+              onPress={() => router.push(`/competition/${item.id}`)}
+            />
+          )}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -50,10 +90,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
   },
-  subtitle: {
+  error: {
+    color: colors.danger,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  empty: {
     color: colors.muted,
-    fontSize: 14,
-    marginTop: 6,
     textAlign: 'center',
   },
 });

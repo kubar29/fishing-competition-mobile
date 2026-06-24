@@ -47,7 +47,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function login(email: string, password: string) {
-    const response = await loginUser({ email, password });
+    const response = await loginUser({
+        email: email.trim().toLowerCase(),
+        password,
+    });
 
     await SecureStore.setItemAsync(TOKEN_KEY, response.token);
 

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../constants/colors';
 
@@ -8,6 +8,7 @@ type CompetitionCardProps = {
   date: string;
   day: string;
   month: string;
+  onPress?: () => void;
 };
 
 export function CompetitionCard({
@@ -16,9 +17,10 @@ export function CompetitionCard({
   date,
   day,
   month,
+  onPress,
 }: CompetitionCardProps) {
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.dateBadge}>
         <Text style={styles.dateDay}>{day}</Text>
         <Text style={styles.dateMonth}>{month}</Text>
@@ -31,7 +33,7 @@ export function CompetitionCard({
       </View>
 
       <Text style={styles.arrow}>›</Text>
-    </View>
+    </Pressable>
   );
 }
 
