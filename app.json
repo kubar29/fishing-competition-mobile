@@ -8,6 +8,7 @@
     "icon": "./assets/images/icon.png",
 
     "scheme": "fishingmobileapp",
+    "backgroundColor": "#0B1220",
     "userInterfaceStyle": "dark",
 
     "ios": {

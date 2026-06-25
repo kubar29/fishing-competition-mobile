@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text } from 'react-native';
 
 import { getCompetitions } from '../../src/api/competitionApi';
 import { CompetitionCard } from '../../src/components/CompetitionCard';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors } from '../../src/constants/colors';
 import { Competition } from '../../src/types/competition';
 
@@ -47,11 +48,8 @@ export default function CompetitionsScreen() {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <Text style={styles.title}>Zawody</Text>
-      </View>
-
-      {isLoading ? (
+      <ScreenHeader title="Zawody" />
+      {isLoading && competitions.length === 0 ? (
         <ActivityIndicator color={colors.primary} />
       ) : errorMessage ? (
         <Text style={styles.error}>{errorMessage}</Text>
@@ -80,16 +78,6 @@ export default function CompetitionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: 40,
-    marginBottom: 28,
-    alignItems: 'center',
-  },
-  title: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: '800',
-  },
   error: {
     color: colors.danger,
     textAlign: 'center',

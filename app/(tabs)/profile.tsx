@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '../../src/components/AppButton';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors } from '../../src/constants/colors';
 import { useAuth } from '../../src/context/AuthContext';
 
@@ -16,9 +17,7 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <Text style={styles.title}>Profil</Text>
-      </View>
+      <ScreenHeader title="Profil" />
 
       <View style={styles.card}>
         <Text style={styles.label}>Użytkownik</Text>
@@ -37,16 +36,6 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: 40,
-    marginBottom: 32,
-    alignItems: 'center',
-  },
-  title: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: '800',
-  },
   card: {
     backgroundColor: colors.card,
     borderRadius: 12,
