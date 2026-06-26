@@ -6,6 +6,14 @@ type LoginRequest = {
   password: string;
 };
 
+type RegisterRequest = {
+  name: string;
+  email: string;
+  password: string;
+  role?: 'USER' | 'JUDGE';
+};
+
+
 export type LoginResponse = {
   token: string;
   user: User;
@@ -23,5 +31,10 @@ export async function getCurrentUser(token: string): Promise<User> {
     },
   });
 
+  return response.data;
+}
+
+export async function registerUser(data: RegisterRequest): Promise<User> {
+  const response = await apiClient.post<User>('/auth/register', data);
   return response.data;
 }
