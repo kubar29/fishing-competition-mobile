@@ -3,10 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 
 import { colors } from '../src/constants/colors';
 import { AuthProvider } from '../src/context/AuthContext';
+import { JudgeStartProvider } from '../src/context/JudgeStartContext';
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
+  <AuthProvider>
+    <JudgeStartProvider>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -18,6 +20,7 @@ export default function RootLayout() {
           },
         }}
       />
-    </AuthProvider>
-  );
+    </JudgeStartProvider>
+  </AuthProvider>
+);
 }

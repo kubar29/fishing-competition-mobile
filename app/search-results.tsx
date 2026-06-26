@@ -7,6 +7,7 @@ import { CompetitionCard } from '../src/components/CompetitionCard';
 import { ScreenContainer } from '../src/components/ScreenContainer';
 import { ScreenHeader } from '../src/components/ScreenHeader';
 import { colors } from '../src/constants/colors';
+import { useAuth } from '../src/context/AuthContext';
 import { Competition } from '../src/types/competition';
 
 export default function SearchResultsScreen() {
@@ -15,6 +16,7 @@ export default function SearchResultsScreen() {
     dateFrom?: string;
     dateTo?: string;
   }>();
+  const { user } = useAuth();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [filteredCompetitions, setFilteredCompetitions] = useState<Competition[]>([]);
@@ -108,12 +110,20 @@ export default function SearchResultsScreen() {
               date={formatDate(item.date)}
               day={getDay(item.date)}
               month={getMonth(item.date)}
-              onPress={() =>
+              onPress={() => {
+                if (user?.role === 'JUDGE') {
+                  router.push({
+                    pathname: '/judge/competition/[id]',
+                    params: { id: item.id.toString() },
+                  });
+                  return;
+                }
+
                 router.push({
                   pathname: '/competition/[id]',
                   params: { id: item.id.toString() },
-                })
-              }
+                });
+              }}
             />
           )}
         />

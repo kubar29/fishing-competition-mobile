@@ -7,12 +7,15 @@ import { CompetitionCard } from '../../src/components/CompetitionCard';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors } from '../../src/constants/colors';
+import { useAuth } from '../../src/context/AuthContext';
 import { Competition } from '../../src/types/competition';
 
 export default function CompetitionsScreen() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const { user } = useAuth();
 
   async function loadCompetitions() {
     try {
@@ -68,7 +71,20 @@ export default function CompetitionsScreen() {
               date={formatDate(item.date)}
               day={getDay(item.date)}
               month={getMonth(item.date)}
-              onPress={() => router.push(`/competition/${item.id}`)}
+              onPress={() => {
+                if (user?.role === 'JUDGE') {
+                  router.push({
+                    pathname: '/judge/competition/[id]',
+                    params: { id: item.id.toString() },
+                  });
+                  return;
+                }
+
+                router.push({
+                  pathname: '/competition/[id]',
+                  params: { id: item.id.toString() },
+                });
+              }}
             />
           )}
         />

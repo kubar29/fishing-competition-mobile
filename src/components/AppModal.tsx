@@ -1,4 +1,4 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../constants/colors';
 import { AppButton } from './AppButton';
@@ -32,9 +32,11 @@ export function AppModal({
           <AppButton title={primaryButtonText} onPress={onPrimaryPress} />
 
           {secondaryButtonText && onSecondaryPress ? (
-            <Pressable onPress={onSecondaryPress}>
-              <Text style={styles.secondaryText}>{secondaryButtonText}</Text>
-            </Pressable>
+            <AppButton
+              title={secondaryButtonText}
+              variant="outline"
+              onPress={onSecondaryPress}
+            />
           ) : null}
         </View>
       </View>

@@ -29,3 +29,4 @@ export interface ClassificationResult {
     };
   };
 }
+export type GeneratedResult = Omit<ClassificationResult, 'start'>;
