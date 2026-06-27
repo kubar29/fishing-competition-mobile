@@ -177,11 +177,6 @@ W głównym katalogu projektu utwórz plik `.env`:
 EXPO_PUBLIC_API_URL=http://ADRES_IP_KOMPUTERA:3000/api
 ```
 
-Przykład:
-
-```env
-EXPO_PUBLIC_API_URL=http://192.168.43.240:3000/api
-```
 
 > Telefon oraz komputer muszą znajdować się w tej samej sieci lokalnej.
 
@@ -208,11 +203,8 @@ Następnie:
 
 Aplikacja wymaga uruchomionego backendu REST API.
 
-Backend powinien być dostępny pod adresem określonym w pliku `.env`, np.:
+Backend powinien być dostępny pod adresem określonym w pliku `.env`.
 
-```
-http://192.168.43.240:3000/api
-```
 
 Przed uruchomieniem aplikacji należy:
 
