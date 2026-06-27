@@ -9,6 +9,7 @@ import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors } from '../../src/constants/colors';
 import { useAuth } from '../../src/context/AuthContext';
 import { Competition } from '../../src/types/competition';
+import { getCompetitionsCache, saveCompetitionsCache } from '../../src/utils/competitionCache';
 
 export default function CompetitionsScreen() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -23,8 +24,18 @@ export default function CompetitionsScreen() {
       setIsLoading(true);
 
       const data = await getCompetitions();
+
       setCompetitions(data);
+      await saveCompetitionsCache(data);
     } catch (error) {
+      const cachedCompetitions = await getCompetitionsCache();
+
+      if (cachedCompetitions.length > 0) {
+        setCompetitions(cachedCompetitions);
+        setErrorMessage('Brak połączenia z API. Wyświetlono zapisane dane.');
+        return;
+      }
+
       setErrorMessage('Nie udało się pobrać zawodów.');
     } finally {
       setIsLoading(false);

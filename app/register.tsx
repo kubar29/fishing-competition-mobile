@@ -9,6 +9,7 @@ import { AppInput } from '../src/components/AppInput';
 import { AppModal } from '../src/components/AppModal';
 import { ScreenContainer } from '../src/components/ScreenContainer';
 import { colors } from '../src/constants/colors';
+import { errorHaptic, successHaptic } from '../src/utils/haptics';
 
 export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
@@ -58,6 +59,8 @@ export default function RegisterScreen() {
         role: 'USER',
       });
 
+      await successHaptic();
+
       setIsSuccessModalVisible(true);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -71,7 +74,7 @@ export default function RegisterScreen() {
           return;
         }
       }
-
+      await errorHaptic();
       setErrorMessage('Nie udało się utworzyć konta.');
     } finally {
       setIsSubmitting(false);

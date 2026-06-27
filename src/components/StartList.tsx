@@ -6,28 +6,90 @@ import { StartListItem } from './StartListItem';
 
 type StartListProps = {
   starts: Start[];
+  isDisabled?: boolean;
   onStartPress: (start: Start) => void;
 };
 
-export function StartList({ starts, onStartPress }: StartListProps) {
+type StartPreview = Start & {
+  previewSectorPoints: number | null;
+  previewStartPoints: number | null;
+  previewPlace: number | null;
+};
+
+function calculatePreview(starts: Start[]): StartPreview[] {
+
+  const startsWithWeight = starts.filter((start) => start.weight != null);
+  const startsWithoutWeight = starts.filter((start) => start.weight == null);
+
+  const sortedByWeight = [...startsWithWeight].sort((a, b) => {
+    if (b.weight !== a.weight) {
+      return b.weight - a.weight;
+    }
+
+    return a.position - b.position;
+  });
+
+  const withSectorPoints = sortedByWeight.map((start, index, array) => {
+    const sameWeightStarts = array.filter((item) => item.weight === start.weight);
+
+    const firstIndex = array.findIndex((item) => item.weight === start.weight);
+    const lastIndex = firstIndex + sameWeightStarts.length - 1;
+
+    const sectorPoints = (firstIndex + 1 + lastIndex + 1) / 2;
+
+    return {
+      ...start,
+      previewSectorPoints: sectorPoints,
+      previewStartPoints: sectorPoints + start.penaltyPoints,
+      previewPlace: null,
+    };
+  });
+
+  const sortedByStartPoints = [...withSectorPoints].sort((a, b) => {
+    if (a.previewStartPoints !== b.previewStartPoints) {
+      return a.previewStartPoints - b.previewStartPoints;
+    }
+
+    return a.position - b.position;
+  });
+
+  const withPlaces = sortedByStartPoints.map((start, index, array) => {
+    const firstIndex = array.findIndex(
+      (item) => item.previewStartPoints === start.previewStartPoints
+    );
+
+    return {
+      ...start,
+      previewPlace: firstIndex + 1,
+    };
+  });
+
+  const withoutWeight = startsWithoutWeight.map((start) => ({
+    ...start,
+    previewSectorPoints: null,
+    previewStartPoints: null,
+    previewPlace: null,
+  }));
+
+  return [...withPlaces, ...withoutWeight];
+}
+
+export function StartList({ starts, isDisabled = false, onStartPress }: StartListProps) {
+  const previewStarts = calculatePreview(starts);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-      <Text style={[styles.headerText, styles.positionColumn]}>St.</Text>
-      <Text style={[styles.headerText, styles.nameColumn]}>Zawodnik</Text>
-      <Text style={[styles.headerText, styles.weightColumn]}>Waga</Text>
-      <Text style={[styles.headerText, styles.penaltyColumn]}>PK</Text>
-      <Text style={[styles.headerText, styles.pointsColumn]}>Pkt.</Text>
-    </View>
+        <Text style={[styles.headerText, styles.positionColumn]}>St.</Text>
+        <Text style={[styles.headerText, styles.nameColumn]}>Zawodnik</Text>
+        <Text style={[styles.headerText, styles.weightColumn]}>Waga</Text>
+        <Text style={[styles.headerText, styles.penaltyColumn]}>PK</Text>
+        <Text style={[styles.headerText, styles.pointsColumn]}>Pkt.</Text>
+        <Text style={[styles.headerText, styles.placeColumn]}>M.</Text>
+      </View>
 
       <FlatList
-        data={[...starts].sort((a, b) => {
-          if (a.sectorPoints == null && b.sectorPoints == null) return 0;
-          if (a.sectorPoints == null) return 1;
-          if (b.sectorPoints == null) return -1;
-
-          return a.sectorPoints - b.sectorPoints;
-        })}
+        data={previewStarts}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -41,7 +103,9 @@ export function StartList({ starts, onStartPress }: StartListProps) {
             competitorName={`${item.competitor.name} ${item.competitor.surname}`}
             weight={item.weight}
             penaltyPoints={item.penaltyPoints}
-            sectorPoints={item.sectorPoints}
+            previewStartPoints={item.previewStartPoints}
+            previewPlace={item.previewPlace}
+            disabled={isDisabled}
             onPress={() => onStartPress(item)}
           />
         )}
@@ -73,20 +137,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   weightColumn: {
-    width: 58,
+    width: 54,
+    textAlign: 'right',
+  },
+  penaltyColumn: {
+    width: 34,
     textAlign: 'right',
   },
   pointsColumn: {
     width: 42,
     textAlign: 'right',
   },
+  placeColumn: {
+    width: 34,
+    textAlign: 'right',
+  },
   empty: {
     color: colors.muted,
     textAlign: 'center',
     marginTop: 24,
-  },
-  penaltyColumn: {
-    width: 42,
-    textAlign: 'center',
   },
 });

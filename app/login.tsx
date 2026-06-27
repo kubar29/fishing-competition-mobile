@@ -7,6 +7,7 @@ import { AppInput } from '../src/components/AppInput';
 import { ScreenContainer } from '../src/components/ScreenContainer';
 import { colors } from '../src/constants/colors';
 import { useAuth } from '../src/context/AuthContext';
+import { errorHaptic, successHaptic } from '../src/utils/haptics';
 
 export default function LoginScreen() {
   const { login, user } = useAuth();
@@ -38,6 +39,8 @@ export default function LoginScreen() {
 
       await login(email.trim(), password);
 
+      await successHaptic();
+
       router.replace('/(tabs)/competitions');
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -51,7 +54,7 @@ export default function LoginScreen() {
           return;
         }
       }
-
+      await errorHaptic();
       setErrorMessage('Wystąpił nieoczekiwany błąd.');
     } finally {
       setIsSubmitting(false);

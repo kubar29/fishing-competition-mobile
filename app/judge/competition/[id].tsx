@@ -4,7 +4,10 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useJudgeStart } from '../../../src/context/JudgeStartContext';
 
 import { getCompetitionById, getCompetitionStructure, } from '../../../src/api/competitionApi';
+import { generateSectorResults, getClassificationResults } from '../../../src/api/resultApi';
 import { getStartsBySector } from '../../../src/api/startApi';
+import { AppButton } from '../../../src/components/AppButton';
+import { AppModal } from '../../../src/components/AppModal';
 import { AppSelect } from '../../../src/components/AppSelect';
 import { CompetitionCard } from '../../../src/components/CompetitionCard';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
@@ -14,6 +17,7 @@ import { colors } from '../../../src/constants/colors';
 import { Competition } from '../../../src/types/competition';
 import { CompetitionStructure } from '../../../src/types/competitionStructure';
 import { Start } from '../../../src/types/start';
+import { errorHaptic, successHaptic } from '../../../src/utils/haptics';
 
 export default function JudgeCompetitionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,6 +30,11 @@ export default function JudgeCompetitionScreen() {
   const [selectedSectorId, setSelectedSectorId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSectorLocked, setIsSectorLocked] = useState(false);
+  const [isGenerateModalVisible, setIsGenerateModalVisible] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+
   const {starts: judgeStarts, setStarts: setJudgeStarts, setCurrentIndex, } = useJudgeStart();
 
   const selectedRound = structure?.rounds.find(
@@ -47,6 +56,24 @@ export default function JudgeCompetitionScreen() {
       label: sector.name,
       value: sector.id,
     })) ?? [];
+  
+  async function checkSectorLock() {
+    if (!id || !selectedRoundId || !selectedSectorId) return;
+
+    try {
+      const results = await getClassificationResults(
+        id,
+        selectedRoundId,
+        selectedSectorId
+      );
+
+      setIsSectorLocked(results.length > 0);
+    } catch (error) {
+      setIsSectorLocked(false);
+    }
+  }
+
+  
 
   async function loadInitialData() {
     if (!id) return;
@@ -94,6 +121,7 @@ export default function JudgeCompetitionScreen() {
       setJudgeStarts(data);
     } catch (error) {
       setStarts([]);
+      setJudgeStarts([]);
     }
   }
 
@@ -104,6 +132,10 @@ export default function JudgeCompetitionScreen() {
   useEffect(() => {
     loadStarts();
   }, [id, selectedRoundId, selectedSectorId]);
+
+  useEffect(() => {
+  checkSectorLock();
+}, [id, selectedRoundId, selectedSectorId]);
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString('pl-PL');
@@ -117,6 +149,25 @@ export default function JudgeCompetitionScreen() {
     return new Date(date)
       .toLocaleDateString('pl-PL', { month: 'short' })
       .toUpperCase();
+  }
+
+  async function handleGenerateResults() {
+    if (!selectedRoundId || !selectedSectorId || isGenerating) return;
+
+    try {
+      setIsGenerating(true);
+      setErrorMessage('');
+
+      await generateSectorResults(selectedRoundId, selectedSectorId);
+      await successHaptic();
+      setIsSectorLocked(true);
+      setIsSuccessModalVisible(true);
+    } catch (error) {
+      await errorHaptic();
+      setErrorMessage('Nie udało się wygenerować wyników sektora.');
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   return (
@@ -171,6 +222,7 @@ export default function JudgeCompetitionScreen() {
 
           <StartList
             starts={judgeStarts}
+            isDisabled={isSectorLocked}
             onStartPress={(start) => {
             const index = judgeStarts.findIndex((item) => item.id === start.id);
 
@@ -181,6 +233,44 @@ export default function JudgeCompetitionScreen() {
                 params: { id: start.id.toString() },
             });
             }}
+          />
+          <View style={styles.generateButtonWrapper}>
+            <AppButton
+              title={
+                isSectorLocked
+                  ? 'SEKTOR ZATWIERDZONY'
+                  : isGenerating
+                    ? 'GENEROWANIE...'
+                    : 'GENERUJ WYNIKI SEKTORA'
+              }
+              variant={isSectorLocked ? 'outline' : 'primary'}
+              onPress={() => {
+                if (!isSectorLocked) {
+                  setIsGenerateModalVisible(true);
+                }
+              }}
+            />
+          </View>
+
+          <AppModal
+            visible={isGenerateModalVisible}
+            title="Zatwierdzić sektor?"
+            message="Po zatwierdzeniu wyniki sektora zostaną wygenerowane, a edycja startów w tym sektorze zostanie zablokowana."
+            primaryButtonText="ZATWIERDŹ"
+            onPrimaryPress={() => {
+              setIsGenerateModalVisible(false);
+              handleGenerateResults();
+            }}
+            secondaryButtonText="ANULUJ"
+            onSecondaryPress={() => setIsGenerateModalVisible(false)}
+          />
+
+          <AppModal
+            visible={isSuccessModalVisible}
+            title="Sektor zatwierdzony"
+            message="Wyniki sektora zostały wygenerowane. Edycja startów została zablokowana."
+            primaryButtonText="OK"
+            onPrimaryPress={() => setIsSuccessModalVisible(false)}
           />
         </>
       ) : null}
@@ -198,5 +288,9 @@ const styles = StyleSheet.create({
     color: colors.danger,
     textAlign: 'center',
     fontWeight: '600',
+  },
+  generateButtonWrapper: {
+    marginTop: 12,
+    marginBottom: 8,
   },
 });

@@ -147,7 +147,9 @@ export default function CompetitionDetailsScreen() {
 
           <View style={styles.tabs}>
             <Text
-              style={[styles.tab, activeTab === 'info' && styles.activeTab]}
+              style={[
+                styles.tab, 
+                activeTab === 'info' && styles.activeTab]}
               onPress={() => setActiveTab('info')}
             >
               Informacje

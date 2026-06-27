@@ -3,7 +3,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { generateSectorResults } from '../../../src/api/resultApi';
 import { getStartById, updateStart } from '../../../src/api/startApi';
 import { AppButton } from '../../../src/components/AppButton';
 import { AppModal } from '../../../src/components/AppModal';
@@ -12,6 +11,7 @@ import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { colors } from '../../../src/constants/colors';
 import { useJudgeStart } from '../../../src/context/JudgeStartContext';
 import { Start } from '../../../src/types/start';
+import { errorHaptic, successHaptic } from '../../../src/utils/haptics';
 
 export default function JudgeStartScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -81,73 +81,60 @@ export default function JudgeStartScreen() {
   }
 
   function handleConfirmSave() {
-    setErrorMessage('');
+      setErrorMessage('');
 
-    const parsedWeight = Number(weight);
+      const parsedWeight = Number(weight);
 
-    if (weight.trim() === '') {
-        setErrorMessage('Wpisz wagę zawodnika.');
-        return;
+      if (weight.trim() === '') {
+          setErrorMessage('Wpisz wagę zawodnika.');
+          return;
+      }
+
+      if (Number.isNaN(parsedWeight) || parsedWeight < 0) {
+          setErrorMessage('Waga musi być liczbą większą lub równą 0.');
+          return;
+      }
+
+      if (parsedWeight % 5 !== 0) {
+          setErrorMessage('Waga musi być podana z dokładnością do 5 gramów.');
+          return;
+      }
+
+      setIsConfirmModalVisible(true);
     }
 
-    if (Number.isNaN(parsedWeight) || parsedWeight < 0) {
-        setErrorMessage('Waga musi być liczbą większą lub równą 0.');
-        return;
-    }
-
-    if (parsedWeight % 5 !== 0) {
-        setErrorMessage('Waga musi być podana z dokładnością do 5 gramów.');
-        return;
-    }
-
-    setIsConfirmModalVisible(true);
-  }
-
-  async function handleSave() {
+    async function handleSave() {
     if (!start || isSubmitting) return;
 
     const parsedWeight = Number(weight);
 
     try {
-        setIsSubmitting(true);
-        setErrorMessage('');
+      setIsSubmitting(true);
+      setErrorMessage('');
 
-        const updatedStart = await updateStart(start.id.toString(), {
+      const updatedStart = await updateStart(start.id.toString(), {
         weight: parsedWeight,
         penaltyPoints,
-        });
+      });
 
-        const generatedResults = await generateSectorResults(
-        updatedStart.roundId,
-        updatedStart.sectorId
-        );
+      await successHaptic();
 
-        const generatedResult = generatedResults.find(
-        (result) => result.startId === updatedStart.id
-        );
+      setStart(updatedStart);
 
-        const refreshedStart = {
-        ...updatedStart,
-        sectorPoints: generatedResult?.sectorPoints ?? updatedStart.sectorPoints,
-        };
-
-        setStart(refreshedStart);
-
-        setStarts((previousStarts) =>
+      setStarts((previousStarts) =>
         previousStarts.map((item) =>
-            item.id === refreshedStart.id ? refreshedStart : item
+          item.id === updatedStart.id ? updatedStart : item
         )
-        );
+      );
 
-        setIsSuccessModalVisible(true);
+      setIsSuccessModalVisible(true);
     } catch (error) {
-        console.log('UPDATE START ERROR:', error);
-        setErrorMessage('Nie udało się zapisać startu.');
+      await errorHaptic();
+      setErrorMessage('Nie udało się zapisać startu.');
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
-
   function incrementPenalty() {
     setPenaltyPoints((previous) => previous + 1);
   }
