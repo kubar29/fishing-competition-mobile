@@ -1,50 +1,232 @@
-# Welcome to your Expo app 👋
+# Fishing Competition System – Mobile Application
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Opis projektu
 
-## Get started
+Fishing Competition System Mobile to aplikacja mobilna stworzona w ramach projektu inżynierskiego. Aplikacja wspiera organizację zawodów wędkarskich oraz umożliwia obsługę zawodów zarówno przez uczestników, jak i sędziów.
 
-1. Install dependencies
+System współpracuje z autorskim backendem REST API opartym o Node.js, Express, Prisma ORM oraz PostgreSQL.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## Technologie
 
-   ```bash
-   npx expo start
-   ```
+### Frontend
 
-In the output, you'll find options to open the app in a
+* React Native
+* Expo
+* TypeScript
+* Expo Router
+* Context API
+* Axios
+* SecureStore
+* AsyncStorage
+* Expo Haptics
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Backend
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+* Node.js
+* Express
+* Prisma ORM
+* PostgreSQL
+* JWT Authentication
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## Funkcjonalności
 
-```bash
-npm run reset-project
+### Użytkownik
+
+* Rejestracja
+* Logowanie
+* Automatyczne logowanie
+* Wylogowanie
+* Lista zawodów
+* Wyszukiwanie zawodów
+* Szczegóły zawodów
+* Klasyfikacja zawodników
+* Profil użytkownika
+
+### Sędzia
+
+* Panel sędziego
+* Wybór tury i sektora
+* Lista zawodników w sektorze
+* Edycja wagi ryb
+* Edycja punktów karnych
+* Podgląd klasyfikacji wyliczany lokalnie
+* Generowanie wyników sektora
+* Blokada edycji po zatwierdzeniu sektora
+
+---
+
+## Architektura aplikacji
+
+Projekt został podzielony na warstwy:
+
+* components
+* screens
+* context
+* api
+* types
+* utils
+* constants
+
+Komunikacja z backendem odbywa się poprzez REST API z wykorzystaniem biblioteki Axios.
+
+---
+
+## Role użytkowników
+
+### USER
+
+* przeglądanie zawodów
+* wyszukiwanie zawodów
+* podgląd klasyfikacji
+* podgląd szczegółów zawodów
+
+### JUDGE
+
+* wszystkie funkcje użytkownika
+* panel sędziego
+* edycja wyników zawodników
+* generowanie wyników sektora
+
+---
+
+## Funkcje natywne
+
+Aplikacja wykorzystuje natywne możliwości urządzenia:
+
+* SecureStore – bezpieczne przechowywanie tokenu JWT
+* AsyncStorage – pamięć podręczna listy zawodów
+* Expo Haptics – informacja zwrotna przy najważniejszych operacjach
+
+---
+
+## Autoryzacja
+
+Aplikacja wykorzystuje JWT.
+
+Po zalogowaniu token zapisywany jest w SecureStore i automatycznie odczytywany przy ponownym uruchomieniu aplikacji.
+
+---
+
+## Panel sędziego
+
+Workflow sędziego:
+
+1. Wybór zawodów
+2. Wybór tury
+3. Wybór sektora
+4. Pobranie listy startów
+5. Edycja wagi oraz punktów karnych
+6. Lokalny podgląd klasyfikacji
+7. Wygenerowanie wyników sektora
+8. Blokada edycji zatwierdzonego sektora
+
+---
+
+## Struktura projektu
+
+```
+app/
+src/
+  api/
+  components/
+  constants/
+  context/
+  types/
+  utils/
+assets/
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Uruchomienie aplikacji
 
-To learn more about developing your project with Expo, look at the following resources:
+### Wymagania
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Przed uruchomieniem projektu należy zainstalować:
 
-## Join the community
+- Node.js 20+
+- npm
+- Expo CLI (opcjonalnie)
+- Expo Go (Android/iOS) lub emulator Android Studio
+- Uruchomiony backend Fishing Competition System
 
-Join our community of developers creating universal apps.
+### Instalacja
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Sklonuj repozytorium:
+
+```bash
+git clone <adres_repozytorium>
+cd fishing-mobile-app
+```
+
+Zainstaluj zależności:
+
+```bash
+npm install
+```
+
+### Konfiguracja
+
+W głównym katalogu projektu utwórz plik `.env`:
+
+```env
+EXPO_PUBLIC_API_URL=http://ADRES_IP_KOMPUTERA:3000/api
+```
+
+Przykład:
+
+```env
+EXPO_PUBLIC_API_URL=http://192.168.43.240:3000/api
+```
+
+> Telefon oraz komputer muszą znajdować się w tej samej sieci lokalnej.
+
+### Uruchomienie
+
+Uruchom aplikację:
+
+```bash
+npx expo start
+```
+
+lub po zmianie pliku `.env`:
+
+```bash
+npx expo start -c
+```
+
+Następnie:
+
+- zeskanuj kod QR aplikacją **Expo Go**, lub
+- uruchom projekt na emulatorze Android Studio.
+
+### Backend
+
+Aplikacja wymaga uruchomionego backendu REST API.
+
+Backend powinien być dostępny pod adresem określonym w pliku `.env`, np.:
+
+```
+http://192.168.43.240:3000/api
+```
+
+Przed uruchomieniem aplikacji należy:
+
+1. uruchomić bazę PostgreSQL (Docker),
+2. uruchomić serwer backend,
+3. upewnić się, że endpoint API jest dostępny z urządzenia mobilnego.
+
+
+
+---
+
+## Autor
+
+Jakub Rusek
+
+Projekt wykonany w ramach pracy inżynierskiej.
+
